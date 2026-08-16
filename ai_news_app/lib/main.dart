@@ -186,12 +186,12 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/search'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({'query': query, 'user_id': widget.userId}),
+        Uri.parse('https://honeycomb-app.onrender.com/api/search'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'query': _searchController.text,
+          'user_id': 'user_123',
+        }),
       );
 
       if (response.statusCode == 200) {
