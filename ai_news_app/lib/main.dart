@@ -179,9 +179,11 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
 
   Future<void> _executeSearch(String query) async {
     if (query.trim().isEmpty) return;
+
+    _queryController.text = query;
+
     setState(() {
       _isLoading = true;
-      _queryController.text = query;
     });
 
     try {
@@ -189,24 +191,28 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
         Uri.parse('https://honeycomb-app.onrender.com/api/search'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'query': _searchController.text,
-          'user_id': 'user_123',
+          'query': query,
+          'user_id': widget.userId,
         }),
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         setState(() {
-          _searchResults = jsonDecode(response.body);
+          _searchResults = data; // Fixed variable name
+          _isLoading = false;
         });
       } else {
-        _showErrorSnackBar("Backend Error Code: ${response.statusCode}");
+        setState(() {
+          _isLoading = false;
+        });
+        _showErrorSnackBar("Failed to fetch search results from server.");
       }
     } catch (e) {
-      _showErrorSnackBar("Network Connection Error: Verify FastAPI is running");
-    } finally {
       setState(() {
         _isLoading = false;
       });
+      _showErrorSnackBar("Connection error: $e");
     }
   }
 
@@ -358,10 +364,10 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
                                 runSpacing: 8,
                                 children: (_searchResults!['suggestions'] as List)
                                     .map((chip) => ActionChip(
-                                          label: Text(chip, style: const TextStyle(fontSize: 12)),
+                                          label: Text(chip.toString(), style: const TextStyle(fontSize: 12)),
                                           backgroundColor: const Color(0xFF18181C),
                                           side: const BorderSide(color: Color(0xFFFFB703)),
-                                          onPressed: () => _executeSearch(chip),
+                                          onPressed: () => _executeSearch(chip.toString()),
                                         ))
                                     .toList(),
                               ),
