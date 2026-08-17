@@ -35,10 +35,10 @@ class HoneycombApp extends StatelessWidget {
       title: 'Honeycomb',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F0F12),
+        scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFFB703),
-          surface: Color(0xFF18181C),
+          primary: Color(0xFFE50914), // Apple News vibrant red/accent style
+          surface: Color(0xFF1E1E24),
         ),
       ),
       home: const AuthWrapper(),
@@ -57,7 +57,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: Color(0xFFFFB703)),
+              child: CircularProgressIndicator(color: Color(0xFFE50914)),
             ),
           );
         }
@@ -89,7 +89,7 @@ class LoginScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.hive, size: 80, color: Color(0xFFFFB703)),
+            const Icon(Icons.newspaper, size: 80, color: Color(0xFFE50914)),
             const SizedBox(height: 16),
             const Text(
               'Honeycomb',
@@ -101,22 +101,22 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'AI-Driven Personal News Engine',
+              'One Subscription to Hundreds of Publications',
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: signInWithGoogle,
-              icon: const Icon(Icons.login, color: Colors.black),
+              icon: const Icon(Icons.login, color: Colors.white),
               label: const Text(
                 'Sign in with Google',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFB703),
+                backgroundColor: const Color(0xFFE50914),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
@@ -176,12 +176,60 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
   final TextEditingController _queryController = TextEditingController();
   bool _isLoading = false;
   Map<String, dynamic>? _searchResults;
+  String _selectedCategoryTab = 'Featured';
+
+  // Magazine / Publication Covers
+  final List<Map<String, String>> _magazineCovers = [
+    {
+      "title": "Global Economy Special",
+      "publisher": "The Economist",
+      "imageUrl": "https://picsum.photos/seed/mag-economist/300/400",
+    },
+    {
+      "title": "AI & The New Workforce",
+      "publisher": "TIME 100",
+      "imageUrl": "https://picsum.photos/seed/mag-time/300/400",
+    },
+    {
+      "title": "Geopolitical Shifts 2026",
+      "publisher": "The New Yorker",
+      "imageUrl": "https://picsum.photos/seed/mag-newyorker/300/400",
+    },
+    {
+      "title": "Tech & Venture Capital",
+      "publisher": "Wired Global",
+      "imageUrl": "https://picsum.photos/seed/mag-wired/300/400",
+    },
+  ];
+
+  // Featured Stories
+  final List<Map<String, String>> _topStories = [
+    {
+      "category": "Economy",
+      "publisher": "Bloomberg",
+      "title": "Global Markets Adjust as Rate Shifts Stabilize Tech Ventures",
+      "summary": "Key insights on venture capital trends and inflation indexes...",
+      "imageUrl": "https://picsum.photos/seed/story-economy/600/400",
+    },
+    {
+      "category": "Geopolitics",
+      "publisher": "Reuters",
+      "title": "US-Iran Relations & Critical Maritime Shipping Straits",
+      "summary": "Analyzing trade routes, security frameworks, and global oil impact...",
+      "imageUrl": "https://picsum.photos/seed/story-geopolitics/600/400",
+    },
+    {
+      "category": "Technology",
+      "publisher": "TechCrunch",
+      "title": "Bangladesh Tech Ecosystem Expands with Cross-Border AI Startups",
+      "summary": "Local engineers lead innovative agentic models for regional scale...",
+      "imageUrl": "https://picsum.photos/seed/story-tech/600/400",
+    },
+  ];
 
   Future<void> _executeSearch(String query) async {
     if (query.trim().isEmpty) return;
-
     _queryController.text = query;
-
     setState(() {
       _isLoading = true;
     });
@@ -199,7 +247,7 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _searchResults = data; // Fixed variable name
+          _searchResults = data;
           _isLoading = false;
         });
       } else {
@@ -224,31 +272,41 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Row(
           children: const [
-            Icon(Icons.hive, color: Color(0xFFFFB703)),
-            SizedBox(width: 8),
-            Text('Honeycomb', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Honeycomb',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5),
+            ),
+            SizedBox(width: 4),
+            Text(
+              'Discover',
+              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 24, color: Colors.white70),
+            ),
           ],
         ),
         actions: [
-          ElevatedButton.icon(
+          IconButton(
+            icon: const Icon(Icons.star_border, color: Colors.white),
             onPressed: () => _showBKashModal(context),
-            icon: const Icon(Icons.bolt, size: 16, color: Colors.black),
-            label: const Text('Upgrade Pro', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFB703)),
           ),
-          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.more_horiz, color: Colors.white),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          bool isDesktop = constraints.maxWidth > 800;
+          bool isDesktop = constraints.maxWidth > 900;
           return Row(
             children: [
               Expanded(
                 flex: isDesktop ? 3 : 5,
-                child: _buildPersonalFeed(),
+                child: _buildAppleNewsFeed(),
               ),
               if (isDesktop) const VerticalDivider(width: 1, color: Colors.white12),
               if (isDesktop)
@@ -263,46 +321,162 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
     );
   }
 
-  Widget _buildPersonalFeed() {
+  Widget _buildAppleNewsFeed() {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       children: [
-        const Text('Your Curated Feed', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        const Text('Personalized by Honeycomb AI', style: TextStyle(color: Colors.grey)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: ['Featured', 'Magazines', 'Newspapers', 'Catalog', 'Sports', 'Puzzles'].map((tab) {
+              bool isSelected = _selectedCategoryTab == tab;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ChoiceChip(
+                  label: Text(tab),
+                  selected: isSelected,
+                  selectedColor: Colors.white,
+                  backgroundColor: const Color(0xFF1E1E24),
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white70,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategoryTab = tab;
+                    });
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 20),
-        _buildNewsCard('Global Economy & Inflation Analysis', 'Markets adjust as rate adjustments stabilize global tech ventures...', 'Economy'),
-        _buildNewsCard('US-Iran Relations & Maritime Shipping', 'Key security developments in critical trade straits impact oil prices...', 'Geopolitics'),
-        _buildNewsCard('Bangladesh Tech Ecosystem Expansion', 'Local startups leverage AI-first products for global cross-border scale...', 'Tech'),
+        const Text(
+          'Top Publications',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 210,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _magazineCovers.length,
+            itemBuilder: (context, index) {
+              final mag = _magazineCovers[index];
+              return Container(
+                width: 140,
+                margin: const EdgeInsets.only(right: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          mag['imageUrl']!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      mag['publisher']!,
+                      style: const TextStyle(fontSize: 12, color: Colors.white54, fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      mag['title']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Selected by Honeycomb Editors',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        ),
+        const SizedBox(height: 12),
+        ..._topStories.map((story) => _buildHeroNewsCard(story)),
       ],
     );
   }
 
-  Widget _buildNewsCard(String title, String summary, String category) {
-    return Card(
-      color: const Color(0xFF18181C),
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+  Widget _buildHeroNewsCard(Map<String, String> story) {
+    return GestureDetector(
+      onTap: () => _executeSearch(story['title']!),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white10),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Chip(
-              label: Text(category, style: const TextStyle(fontSize: 10, color: Colors.black)),
-              backgroundColor: const Color(0xFFFFB703),
-              visualDensity: VisualDensity.compact,
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Stack(
+                children: [
+                  Image.network(
+                    story['imageUrl']!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        story['publisher']!.toUpperCase(),
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text(summary, style: const TextStyle(color: Colors.grey, height: 1.4)),
-            const SizedBox(height: 12),
-            TextButton.icon(
-              onPressed: () => _executeSearch(title),
-              icon: const Icon(Icons.auto_awesome, size: 16, color: Color(0xFFFFB703)),
-              label: const Text('Ask Honeycomb AI', style: TextStyle(color: Color(0xFFFFB703))),
-            )
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    story['title']!,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, height: 1.2),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    story['summary']!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: const [
+                      Icon(Icons.auto_awesome, size: 14, color: Color(0xFFE50914)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Interrogate with Honeycomb AI',
+                        style: TextStyle(color: Color(0xFFE50914), fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -311,7 +485,7 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
 
   Widget _buildAISearchPanel() {
     return Container(
-      color: const Color(0xFF121215),
+      color: const Color(0xFF16161A),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,11 +495,11 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
           TextField(
             controller: _queryController,
             decoration: InputDecoration(
-              hintText: 'Ask anything (e.g., Oil prices impact)...',
+              hintText: 'Ask about any news event...',
               filled: true,
-              fillColor: const Color(0xFF18181C),
+              fillColor: const Color(0xFF222228),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.send, color: Color(0xFFFFB703)),
+                icon: const Icon(Icons.arrow_upward, color: Color(0xFFE50914)),
                 onPressed: () => _executeSearch(_queryController.text),
               ),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -335,19 +509,25 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
           const SizedBox(height: 20),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFB703)))
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFFE50914)))
                 : _searchResults == null
-                    ? const Center(child: Text('Ask a question to trigger AI synthesis', style: TextStyle(color: Colors.grey)))
+                    ? const Center(
+                        child: Text(
+                          'Tap any story card or type a query to interrogate context',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
                     : SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Synthesized Answer', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB703))),
+                            const Text('Synthesized Answer', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE50914))),
                             const SizedBox(height: 8),
                             Text(_searchResults!['answer'] ?? '', style: const TextStyle(fontSize: 15, height: 1.5)),
                             const SizedBox(height: 20),
                             if (_searchResults!['sources'] != null) ...[
-                              const Text('Sources & Links', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB703))),
+                              const Text('Sources & Links', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE50914))),
                               const SizedBox(height: 8),
                               ...(_searchResults!['sources'] as List).map((src) => ListTile(
                                     contentPadding: EdgeInsets.zero,
@@ -357,7 +537,7 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
                               const SizedBox(height: 20),
                             ],
                             if (_searchResults!['suggestions'] != null) ...[
-                              const Text('Suggested Cells', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB703))),
+                              const Text('Follow-up Prompts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFE50914))),
                               const SizedBox(height: 10),
                               Wrap(
                                 spacing: 8,
@@ -365,8 +545,8 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
                                 children: (_searchResults!['suggestions'] as List)
                                     .map((chip) => ActionChip(
                                           label: Text(chip.toString(), style: const TextStyle(fontSize: 12)),
-                                          backgroundColor: const Color(0xFF18181C),
-                                          side: const BorderSide(color: Color(0xFFFFB703)),
+                                          backgroundColor: const Color(0xFF222228),
+                                          side: const BorderSide(color: Color(0xFFE50914)),
                                           onPressed: () => _executeSearch(chip.toString()),
                                         ))
                                     .toList(),
@@ -384,17 +564,17 @@ class _HoneycombDashboardUIState extends State<HoneycombDashboardUI> {
   void _showBKashModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF18181C),
+      backgroundColor: const Color(0xFF1E1E24),
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.bolt, size: 48, color: Color(0xFFFFB703)),
+            const Icon(Icons.star, size: 48, color: Color(0xFFE50914)),
             const SizedBox(height: 12),
             const Text('Upgrade to Honeycomb Pro', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Get unlimited Claude AI searches and personalized deep feeds for ৳199/month.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            const Text('Unlock all subscriber editions, unlimited AI deep context, and exclusive feeds for ৳199/month.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
